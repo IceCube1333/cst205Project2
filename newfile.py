@@ -2,6 +2,12 @@ from pytesseract import image_to_string
 from PIL import Image
 from PIL import ImageEnhance
 
+import smtplib
+import getpass
+from email.MIMEMultipart import MIMEMultipart
+from email.MIMEText import MIMEText
+from email.MIMEBase import MIMEBase
+from email import encoders
 
 #Image resizing based on percentage
 basewidth = 500
@@ -60,3 +66,38 @@ f = open("text.txt","w")
 f.write(image_to_string(newyo))
 f.write(image_to_string(new2yo))
 f.close()
+
+
+#email
+fromaddr = "whutt@csumb.edu"
+toaddr = "whutt@csumb.edu"
+ 
+msg = MIMEMultipart()
+ 
+msg['From'] = fromaddr
+msg['To'] = toaddr
+msg['Subject'] = "Text from picture"
+ 
+body = "Here is your text."
+ 
+msg.attach(MIMEText(body, 'plain'))
+ 
+filename = "text.txt"
+attachment = open("text.txt", "rb")
+ 
+part = MIMEBase('application', 'octet-stream')
+part.set_payload((attachment).read())
+encoders.encode_base64(part)
+part.add_header('Content-Disposition', "attachment; filename= %s" % filename)
+ 
+msg.attach(part)
+ 
+server = smtplib.SMTP('smtp.gmail.com', 587)
+server.starttls()
+print ("Sending mail to "+ toaddr)
+mypwd = getpass.getpass('Enter your password: ') 
+server.login(fromaddr, mypwd)
+text = msg.as_string()
+server.sendmail(fromaddr, toaddr, text)
+print "Message sent"
+server.quit()
